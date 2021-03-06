@@ -1,61 +1,77 @@
-// Modules to control application life and create native browser window
-const {app, BrowserWindow, screen} = require('electron')
-const path = require('path')
-app.addRecentDocument(path.join(__dirname,"index.html"))
-app.setUserTasks([
-  {
-    program: process.execPath,
-    arguments: './node_modules/electron/dist/electron.exe ./main',
-    iconPath: process.execPath,
-    iconIndex: 0,
-    title: 'New Window',
-    description: 'Create a new window'
-  }
-])
-function createWindow () {
-  // Create the browser window.
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  const mainWindow = new BrowserWindow({
-  width: (width*0.8), height: (height*0.8),
-    webPreferences: {
-      nodeIntegration: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  })
-  mainWindow.setOverlayIcon('logo.jpg', 'Description for overlay')
-  // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
-  let x = 0.0;
-  setInterval(function () {
-    if (x<1.0) {
-      x += 0.1
-    }
-    else {
-      x=0.0
-    }
-    mainWindow.setProgressBar(x)
-  }, 500)
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+const { app, BrowserWindow, TouchBar, webContents } = require('electron')
+
+const { TouchBarLabel, TouchBarButton, TouchBarSpacer } = TouchBar
+
+let spinning = false
+
+// Reel labels
+const reel1 = new TouchBarLabel()
+const reel2 = new TouchBarLabel()
+const reel3 = new TouchBarLabel()
+
+// Spin result label
+const result = new TouchBarLabel()
+
+// Spin button
+const getRandomValue = () => {
+  const values = ['🍒', '💎', '7️⃣', '🍊', '🔔', '⭐', '🍇', '🍀']
+  return values[Math.floor(Math.random() * values.length)]
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+const updateReels = () => {
+  reel1.label = getRandomValue()
+  reel2.label = getRandomValue()
+  reel3.label = getRandomValue()
+}
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function () {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') app.quit()
+
+
+let window
+
+app.whenReady().then(() => {
+  window = new BrowserWindow({
+    frame: true,
+    titleBarStyle: 'hiddenInset',
+    width: 800,
+    height: 500,
+    backgroundColor: '#000',
+    icon: __dirname +'/images.png'
+  })
+  const move  = (direction) => window.webContents.executeJavaScript(`snake.setDirection('${direction}')`, true)
+
+  const left = new TouchBarButton({
+    label: '⬅️',
+    backgroundColor: '#7851A9',
+    click: () => move('left')
+  })
+  const right = new TouchBarButton({
+    label: '➡️',
+    backgroundColor: '#7851A9',
+    click: () => move('right')
+  })
+  const bottom = new TouchBarButton({
+    label: '⬇️',
+    backgroundColor: '#7851A9',
+    click: () => move('down')
+  })
+  const top = new TouchBarButton({
+    label: '⬆️',
+    backgroundColor: '#7851A9',
+    click: () => move('up')
+  })
+  const touchBar = new TouchBar({
+    items: [
+      left,
+      new TouchBarSpacer({ size: 'large' }),
+      top,
+      new TouchBarSpacer({ size: 'large' }),
+      right,
+      new TouchBarSpacer({ size: 'large' }),
+      bottom,
+      new TouchBarSpacer({ size: 'large' }),
+    ]
+  })
+
+  window.loadFile('index.html')
+  window.setTouchBar(touchBar)
 })
-
-app.on('activate', function () {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
-})
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

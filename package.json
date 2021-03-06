@@ -6,8 +6,11 @@
   "dependencies": {
     "electron": "^8.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron-packager": "^15.2.0"
+  },
   "scripts": {
+    "build": "electron-packager ../electronApp  macsnake --platform=darwin --icon=icon --overwrite",
     "start": "electron  main"
   },
   "keywords": [

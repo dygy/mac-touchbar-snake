@@ -3,8 +3,7 @@ let myNotification = new Notification('Title', {
     body: 'Lorem Ipsum Dolor Sit Amet'
 })
 function createBrowserWindow() {
-    const remote = require('electron').remote;
-    const BrowserWindow = remote.BrowserWindow;
+    const BrowserWindow = require('electron').remote.BrowserWindow;
     const win = new BrowserWindow({
         width: (window.innerWidth*0.8), height: (window.innerHeight*0.8),
         webPreferences: {
